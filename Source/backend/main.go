@@ -2,6 +2,7 @@ package main
 
 import (
 	"annotate-be/middlewares"
+	"annotate-be/routers"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -11,6 +12,9 @@ func main() {
 	r := gin.Default()
 
 	r.Use(middlewares.CORSMiddleware())
+
+
+	routers.UserRouter(r)
 
 	/*FOR TESTING PURPOSE*/
 	r.GET("/", func(context *gin.Context) {
