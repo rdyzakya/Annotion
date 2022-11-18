@@ -12,7 +12,8 @@ type User struct {
 }
 
 type userBody struct {
-	User
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 var userAccounts = [3]User{
@@ -39,7 +40,7 @@ func LoginController(ctx *gin.Context) {
 	}
 
 	for _, userData := range userAccounts {
-		if body.password == userData.password && body.username == userData.username {
+		if body.Password == userData.password && body.Username == userData.username {
 			ctx.JSON(http.StatusOK, gin.H{
 				"message": "login berhasil",
 			})

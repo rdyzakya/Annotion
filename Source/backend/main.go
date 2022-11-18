@@ -1,6 +1,7 @@
 package main
 
 import (
+	"annotate-be/database"
 	"annotate-be/middlewares"
 	"annotate-be/routers"
 	"fmt"
@@ -13,8 +14,8 @@ func main() {
 
 	r.Use(middlewares.CORSMiddleware())
 
-
 	routers.UserRouter(r)
+	routers.DatasetRouter(r)
 
 	/*FOR TESTING PURPOSE*/
 	r.GET("/", func(context *gin.Context) {
@@ -22,6 +23,9 @@ func main() {
 			"test": "backend  is running",
 		})
 	})
+
+	/*Connect to database*/
+	database.DBSetupMain()
 
 	/*Running Server*/
 	if err := r.Run("0.0.0.0:8010"); err != nil {
