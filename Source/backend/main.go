@@ -16,6 +16,7 @@ func main() {
 
 	routers.UserRouter(r)
 	routers.DatasetRouter(r)
+	routers.FileGetterRoute(r)
 
 	/*FOR TESTING PURPOSE*/
 	r.GET("/", func(context *gin.Context) {
