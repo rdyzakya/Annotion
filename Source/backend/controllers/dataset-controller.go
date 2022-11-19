@@ -23,7 +23,8 @@ type newDatasetBody struct {
 
 func GetAllDataset(ctx *gin.Context) {
 	var datasets []models.Dataset
-	if err := database.DB.Find(&datasets).Error; err != nil {
+	var owner, hasOwner = ctx.GetQuery("owner")
+	if err := database.DB.Where(utils.IfThenElse(hasOwner, "owner = ? ", "1 = ?"), utils.IfThenElse(hasOwner, owner, 1)).Find(&datasets).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.ErrorResponse(err))
 		return
 	}
@@ -36,8 +37,8 @@ func GetAllDataset(ctx *gin.Context) {
 
 func GetDatasetById(ctx *gin.Context) {
 	var dataset models.Dataset
-
-	if err := database.DB.Where("id = ?", ctx.Param("id")).First(&dataset).Error; err != nil {
+	var owner, hasOwner = ctx.GetQuery("owner")
+	if err := database.DB.Where(utils.IfThenElse(hasOwner, "id = ? and owner = ?", "id = ?"), ctx.Param("id"), owner).First(&dataset).Error; err != nil {
 		ctx.JSON(http.StatusNotFound, utils.ExceptionResponse("dataset tidak ditemukan"))
 		return
 	}
