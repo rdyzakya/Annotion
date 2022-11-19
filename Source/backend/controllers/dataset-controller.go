@@ -51,7 +51,7 @@ func GetDatasetById(ctx *gin.Context) {
 func AddDataset(ctx *gin.Context) {
 	var body newDatasetBody
 	if err := ctx.ShouldBind(&body); err != nil {
-		ctx.JSON(400, utils.ExceptionResponse("jangan lupa terkait venue dsb"))
+		ctx.JSON(400, utils.ExceptionResponse("data kurang lengkap"))
 	}
 
 	//Upload dataset to storage
@@ -66,7 +66,12 @@ func AddDataset(ctx *gin.Context) {
 	//write to disk
 	newUUID, err := exec.Command("uuidgen").Output()
 	newUUID = []byte(strings.TrimSuffix(fmt.Sprintf("%s", newUUID), "\n"))
-	storageLoc := fmt.Sprintf("storage/%s%s", newUUID, filepath.Ext(uploadedFile.Filename))
+	extension := filepath.Ext(uploadedFile.Filename)
+	if extension != ".csv" {
+		ctx.JSON(http.StatusNotFound, utils.ExceptionResponse("format should be in csv"))
+		return
+	}
+	storageLoc := fmt.Sprintf("storage/%s%s", newUUID, extension)
 	err = ctx.SaveUploadedFile(uploadedFile, storageLoc)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.ErrorResponse(err))
