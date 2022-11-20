@@ -1,0 +1,48 @@
+version: '3'
+services:
+  pg:
+    image: bitnami/postgresql:11-debian-9
+    container_name: pg
+    environment:
+      POSTGRESQL_USERNAME: cakrawala
+      POSTGRESQL_PASSWORD: c4kr4w4l4
+      POSTGRESQL_DATABASE: cakrawala
+      TZ: 'GMT+7'
+      PGTZ: 'GMT+7'
+    ports:
+      - '3050:5432'
+    volumes:
+      - /docker/postgres:/var/lib/postgresql
+    networks:
+      - backend
+
+  golang-rest-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: golang-rest-api
+    ports:
+      - "8080:8010"
+    volumes:
+      - ".:/app"
+    environment:
+      - DBHOST=pg
+      - DBPORT=5432
+      - DBUSN=cakrawala
+      - DBPASS=c4kr4w4l4
+      - DBNAME=cakrawala
+    restart: unless-stopped
+    links:
+      - pg
+    depends_on:
+      - pg
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  data:
+    driver: local
