@@ -15,10 +15,11 @@ import (
 )
 
 type newDatasetBody struct {
-	DatasetName    string                `form:"dataset_name" binding:"required"`
-	Metadata       string                `form:"metadata" binding:"required"`
-	AnnotationFile *multipart.FileHeader `form:"annotation_file" binding:"required"`
-	Owner          string                `form:"owner" binding:"required"`
+	DatasetName    string                `form:"dataset_name"`
+	Description    string                `form:"description" `
+	Labels         string                `form:"labels" `
+	AnnotationFile *multipart.FileHeader `form:"annotation_file"`
+	Owner          string                `form:"owner" `
 }
 
 func GetAllDataset(ctx *gin.Context) {
@@ -52,13 +53,16 @@ func GetDatasetById(ctx *gin.Context) {
 func AddDataset(ctx *gin.Context) {
 	var body newDatasetBody
 	if err := ctx.ShouldBind(&body); err != nil {
+		fmt.Println(err)
 		ctx.JSON(400, utils.ExceptionResponse("data kurang lengkap"))
+		return
 	}
 
 	//Upload dataset to storage
 	uploadedFile, e := ctx.FormFile("annotation_file")
 	if e != nil {
 		ctx.JSON(500, utils.ErrorResponse(e))
+		return
 	}
 
 	openedFile, _ := uploadedFile.Open()
@@ -82,7 +86,8 @@ func AddDataset(ctx *gin.Context) {
 	//Save to database
 	new_dataset := models.Dataset{
 		Name:         body.DatasetName,
-		Metadata:     body.Metadata,
+		Description:  body.Description,
+		Labels:       body.Labels,
 		FileLocation: storageLoc,
 		Owner:        body.Owner,
 	}

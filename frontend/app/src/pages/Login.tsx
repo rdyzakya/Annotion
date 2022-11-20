@@ -24,9 +24,9 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
+import {BE_URL} from "../constanta";
 
 const Main = () => {
-  const endpoint = "http://localhost:8010/";
   const [username, setUsername] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [error, setError] = React.useState(null);
@@ -38,7 +38,7 @@ const Main = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("http://localhost:3000/login", {
+      const response = await fetch(BE_URL+"user/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -49,11 +49,11 @@ const Main = () => {
         }),
       });
       const data = await response.json();
-      if (username === "admin") {
-        console.log("haha");
-        localStorage.setItem("token", "admin");
+
+      if(response.status==200){
+        localStorage.setItem("token", username);
         navigate("/");
-      } else if (data.error) {
+      }else{
         setError(data.error);
       }
     } catch (error: any) {

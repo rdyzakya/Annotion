@@ -27,7 +27,7 @@ import { ColorModeSwitcher } from "../ColorModeSwitcher";
 import doge from "../doge.png";
 
 import {
-  BrowserRouter as Router,
+  BrowserRouter as Router, json,
   Navigate,
   Outlet,
   Route,
@@ -35,83 +35,45 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
+import {BE_URL} from "../constanta";
+import {useEffect} from "react";
 
 const Main = () => {
-  const endpoint = "http://localhost:8010/";
-  const datasets_list = [
-    {
-      name: "Dataset 1",
-      description: "This is a description of the dataset",
-      image: "https://via.placeholder.com/150",
-    },
-    {
-      name: "Dataset 2",
-      description: "This is a description of the dataset",
-      image: "https://via.placeholder.com/150",
-    },
-    {
-      name: "Dataset 3",
-      description: "This is a description of the dataset",
-      image: "https://via.placeholder.com/150",
-    },
-    {
-      name: "Dataset 1",
-      description: "This is a description of the dataset",
-      image: "https://via.placeholder.com/150",
-    },
-    {
-      name: "Dataset 2",
-      description: "This is a description of the dataset",
-      image: "https://via.placeholder.com/150",
-    },
-    {
-      name: "Dataset 3",
-      description: "This is a description of the dataset",
-      image: "https://via.placeholder.com/150",
-    },
-    {
-      name: "Dataset 1",
-      description: "This is a description of the dataset",
-      image: "https://via.placeholder.com/150",
-    },
-    {
-      name: "Dataset 2",
-      description: "This is a description of the dataset",
-      image: "https://via.placeholder.com/150",
-    },
-    {
-      name: "Dataset 3",
-      description: "This is a description of the dataset",
-      image: "https://via.placeholder.com/150",
-    },
-    {
-      name: "Dataset 2",
-      description: "This is a description of the dataset",
-      image: "https://via.placeholder.com/150",
-    },
-    {
-      name: "Dataset 3",
-      description: "This is a description of the dataset",
-      image: "https://via.placeholder.com/150",
-    },
-    {
-      name: "Dataset 1",
-      description: "This is a description of the dataset",
-      image: "https://via.placeholder.com/150",
-    },
-    {
-      name: "Dataset 2",
-      description: "This is a description of the dataset",
-      image: "https://via.placeholder.com/150",
-    },
-    {
-      name: "Dataset 3",
-      description: "This is a description of the dataset",
-      image: "https://via.placeholder.com/150",
-    },
-  ];
+  const endpoint = BE_URL;
 
-  const [dataset, setDataset] = React.useState(datasets_list[0]);
+  const [datasetList, setDatasetList] = React.useState([
+    {
+      "id": 1,
+      "name": "isengg",
+      "metadata": "testaafdsadf",
+      "fileLocation": "7995c231-fd3c-4ff2-abd1-12ba339e2612.rar",
+      "owner": "tester",
+      "createdAt": "2022-11-18T14:50:14.349499+07:00",
+      "updatedAt": "2022-11-18T14:50:14.349499+07:00",
+      "DeletedAt": null
+    },
+    {
+      "id": 2,
+      "name": "isengg2",
+      "metadata": "testaafdsadf22222",
+      "fileLocation": "7995c231-fd3c-4ff2-abd1-12ba339e2612.rar",
+      "owner": "tester",
+      "createdAt": "2022-11-18T14:50:14.349499+07:00",
+      "updatedAt": "2022-11-18T14:50:14.349499+07:00",
+      "DeletedAt": null
+    },
+    {
+      "id": 3,
+      "name": "isengg3",
+      "metadata": "testaafdsadf33333",
+      "fileLocation": "7995c231-fd3c-4ff2-abd1-12ba339e2612.rar",
+      "owner": "tester",
+      "createdAt": "2022-11-18T14:50:14.349499+07:00",
+      "updatedAt": "2022-11-18T14:50:14.349499+07:00",
+      "DeletedAt": null
+    }
+  ])
+  const [dataset, setDataset] = React.useState(datasetList[0]);
   const [uploadedFile, setUploadedFile] = React.useState(null);
   const [uploadedFileName, setUploadedFileName] = React.useState("");
   const [uploadedFileDescription, setUploadedFileDescription] = React.useState(
@@ -125,19 +87,46 @@ const Main = () => {
     console.log(e);
   };
 
+  useEffect( () => {
+
+    const fetchData = async () => {
+      if (localStorage.getItem("token")) {
+        const res = await fetch(BE_URL + "datasets?owner=" + localStorage.getItem("token"))
+        if(res.status==200){
+          const jsonData = await res.json()
+          console.log(jsonData)
+          setDataset(jsonData["data"])
+        }
+      }
+    }
+
+    fetchData()
+  }, [])
+
   const handleFileUpload = () => {
+    const owner = localStorage.getItem("token")
     const formData = new FormData();
-    formData.append("file", uploadedFile! as string | Blob);
-    formData.append("name", uploadedFileName);
+    formData.append("annotation_file", uploadedFile! as string | Blob);
+    formData.append("dataset_name", uploadedFileName);
     formData.append("description", uploadedFileDescription);
     formData.append("labels", uploadedFileLabels);
-    fetch(endpoint + "upload", {
+    formData.append("owner", owner ?? "")
+    //formData.
+    fetch(endpoint + "datasets", {
       method: "POST",
       body: formData,
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if(response.status == 200){
+          alert("berhasil unggah")
+          return response.json()
+        }
+        return null
+      })
       .then((result) => {
-        console.log("Success:", result);
+        if (result!=null){
+          window.location.reload()
+        }
       })
       .catch((error) => {
         console.error("Error:", error);
@@ -178,7 +167,7 @@ const Main = () => {
             />
           </Center>
           <Box h={"60vh"} overflowY={"auto"}>
-            {datasets_list.map((dataset) => (
+            {datasetList.map((dset) => (
               <Center>
                 <Box
                   as={"button"}
@@ -190,8 +179,9 @@ const Main = () => {
                   borderRadius="md"
                   boxShadow="md"
                   m="1"
+                  onClick={() => setDataset(dset)}
                 >
-                  <Text>{dataset.name}</Text>
+                  <Text>{dset.name}</Text>
                 </Box>
               </Center>
             ))}
@@ -255,7 +245,7 @@ const Main = () => {
           </Center>
         </GridItem>
         <GridItem bg="white" area={"main"} textAlign={"center"}>
-          Main
+          {dataset.name}
         </GridItem>
         {/* <GridItem pl="2" bg="blue.300" area={"footer"}>
           Footer
@@ -270,11 +260,11 @@ const Main = () => {
             <Text fontWeight={"bold"}>File Upload</Text>
             <Input type="file"  marginBottom={"10px"} onChange={handleFileChange} />
             <Text fontWeight={"bold"}>Dataset Name</Text>
-            <Input placeholder="ex: Shop Review" marginBottom={"10px"}/>
+            <Input placeholder="ex: Shop Review" marginBottom={"10px"} onChange={(e)=>setUploadedFileName(e.target.value)}/>
             <Text fontWeight={"bold"}>Dataset Description</Text>
-            <Input placeholder="ex: Contains shoe shop customer reviews" marginBottom={"10px"}/>
+            <Input placeholder="ex: Contains shoe shop customer reviews" marginBottom={"10px"} onChange={(e)=>setUploadedFileDescription(e.target.value)}/>
             <Text fontWeight={"bold"}>Dataset Labels</Text>
-            <Input placeholder="seperate with comma, ex: good,bad,neutral" marginBottom={"10px"}/>
+            <Input placeholder="seperate with comma, ex: good,bad,neutral" marginBottom={"10px"} onChange={(e)=>setUploadedFileLabels(e.target.value)}/>
           </ModalBody>
 
           <ModalFooter>
