@@ -3,3 +3,6 @@ pandas
 gensim
 numpy
 re
+hdbscan
+scikit-learn-extra
+xgboost
