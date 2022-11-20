@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -30,12 +30,12 @@ async def text_clustering(dataset: TextClusterDataset):
         tfidf = TfidfVectorizer()
         vector = tfidf.fit_transform(texts)
     except Exception as e:
-        return {"message": "Error while vectorizing the text", "error": str(e)}
+        raise HTTPException(status_code=500, detail=str(e))
     n_clusters = dataset.n_clusters
     try:
         kmedoids = KMedoids(n_clusters=n_clusters, random_state=0, metric='cosine').fit(vector)
     except Exception as e:
-        return {"message": "Error while clustering the text", "error": str(e)}
+        raise HTTPException(status_code=500, detail=str(e))
     labels = kmedoids.labels_
     return {"labels": labels.tolist()}
 
@@ -48,14 +48,14 @@ async def text_reccomendation_lite(dataset : TextReccomendationDataset):
         vector = tfidf.transform(dataset.annotated_text)
         vector_to_reccomend = tfidf.transform(dataset.text_to_reccomend)
     except Exception as e:
-        return {"message": "Error while vectorizing the text", "error": str(e)}
+        raise HTTPException(status_code=500, detail=str(e))
     le = LabelEncoder()
     labels = le.fit_transform(dataset.annotated_labels)
     try:
         xgb = XGBClassifier()
         xgb.fit(vector, labels)
     except Exception as e:
-        return {"message": "Error while training the model", "error": str(e)}
+        raise HTTPException(status_code=500, detail=str(e))
     labels_to_reccomend = xgb.predict(vector_to_reccomend)
     labels_to_reccomend = le.inverse_transform(labels_to_reccomend)
     return {"labels": labels_to_reccomend.tolist()}

@@ -1,0 +1,20 @@
+version: '3'
+services:
+  mls:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fastapi-ml
+    ports:
+      - "7000:7000"
+    restart: unless-stopped
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  data:
+    driver: local
