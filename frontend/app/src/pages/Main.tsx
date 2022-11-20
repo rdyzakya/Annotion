@@ -22,12 +22,14 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Textarea,
 } from "@chakra-ui/react";
 import { ColorModeSwitcher } from "../ColorModeSwitcher";
 import doge from "../doge.png";
 
 import {
-  BrowserRouter as Router, json,
+  BrowserRouter as Router,
+  json,
   Navigate,
   Outlet,
   Route,
@@ -35,50 +37,49 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
-import {BE_URL} from "../constanta";
-import {useEffect} from "react";
+import { BE_URL } from "../constanta";
+import { useEffect } from "react";
 
 const Main = () => {
   const endpoint = BE_URL;
 
   const [datasetList, setDatasetList] = React.useState([
     {
-      "id": 1,
-      "name": "isengg",
-      "metadata": "testaafdsadf",
-      "fileLocation": "7995c231-fd3c-4ff2-abd1-12ba339e2612.rar",
-      "owner": "tester",
-      "createdAt": "2022-11-18T14:50:14.349499+07:00",
-      "updatedAt": "2022-11-18T14:50:14.349499+07:00",
-      "DeletedAt": null
+      id: 1,
+      name: "isengg",
+      metadata: "testaafdsadf",
+      fileLocation: "7995c231-fd3c-4ff2-abd1-12ba339e2612.rar",
+      owner: "tester",
+      createdAt: "2022-11-18T14:50:14.349499+07:00",
+      updatedAt: "2022-11-18T14:50:14.349499+07:00",
+      DeletedAt: null,
     },
     {
-      "id": 2,
-      "name": "isengg2",
-      "metadata": "testaafdsadf22222",
-      "fileLocation": "7995c231-fd3c-4ff2-abd1-12ba339e2612.rar",
-      "owner": "tester",
-      "createdAt": "2022-11-18T14:50:14.349499+07:00",
-      "updatedAt": "2022-11-18T14:50:14.349499+07:00",
-      "DeletedAt": null
+      id: 2,
+      name: "isengg2",
+      metadata: "testaafdsadf22222",
+      fileLocation: "7995c231-fd3c-4ff2-abd1-12ba339e2612.rar",
+      owner: "tester",
+      createdAt: "2022-11-18T14:50:14.349499+07:00",
+      updatedAt: "2022-11-18T14:50:14.349499+07:00",
+      DeletedAt: null,
     },
     {
-      "id": 3,
-      "name": "isengg3",
-      "metadata": "testaafdsadf33333",
-      "fileLocation": "7995c231-fd3c-4ff2-abd1-12ba339e2612.rar",
-      "owner": "tester",
-      "createdAt": "2022-11-18T14:50:14.349499+07:00",
-      "updatedAt": "2022-11-18T14:50:14.349499+07:00",
-      "DeletedAt": null
-    }
-  ])
+      id: 3,
+      name: "isengg3",
+      metadata: "testaafdsadf33333",
+      fileLocation: "7995c231-fd3c-4ff2-abd1-12ba339e2612.rar",
+      owner: "tester",
+      createdAt: "2022-11-18T14:50:14.349499+07:00",
+      updatedAt: "2022-11-18T14:50:14.349499+07:00",
+      DeletedAt: null,
+    },
+  ]);
   const [dataset, setDataset] = React.useState(datasetList[0]);
   const [uploadedFile, setUploadedFile] = React.useState(null);
   const [uploadedFileName, setUploadedFileName] = React.useState("");
-  const [uploadedFileDescription, setUploadedFileDescription] = React.useState(
-    ""
-  );
+  const [uploadedFileDescription, setUploadedFileDescription] =
+    React.useState("");
   const [uploadedFileLabels, setUploadedFileLabels] = React.useState("");
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -87,45 +88,46 @@ const Main = () => {
     console.log(e);
   };
 
-  useEffect( () => {
-
+  useEffect(() => {
     const fetchData = async () => {
       if (localStorage.getItem("token")) {
-        const res = await fetch(BE_URL + "datasets?owner=" + localStorage.getItem("token"))
-        if(res.status==200){
-          const jsonData = await res.json()
-          console.log(jsonData)
-          setDataset(jsonData["data"])
+        const res = await fetch(
+          BE_URL + "datasets?owner=" + localStorage.getItem("token")
+        );
+        if (res.status == 200) {
+          const jsonData = await res.json();
+          console.log(jsonData);
+          setDataset(jsonData["data"]);
         }
       }
-    }
+    };
 
-    fetchData()
-  }, [])
+    fetchData();
+  }, []);
 
   const handleFileUpload = () => {
-    const owner = localStorage.getItem("token")
+    const owner = localStorage.getItem("token");
     const formData = new FormData();
     formData.append("annotation_file", uploadedFile! as string | Blob);
     formData.append("dataset_name", uploadedFileName);
     formData.append("description", uploadedFileDescription);
     formData.append("labels", uploadedFileLabels);
-    formData.append("owner", owner ?? "")
+    formData.append("owner", owner ?? "");
     //formData.
     fetch(endpoint + "datasets", {
       method: "POST",
       body: formData,
     })
       .then((response) => {
-        if(response.status == 200){
-          alert("berhasil unggah")
-          return response.json()
+        if (response.status == 200) {
+          alert("berhasil unggah");
+          return response.json();
         }
-        return null
+        return null;
       })
       .then((result) => {
-        if (result!=null){
-          window.location.reload()
+        if (result != null) {
+          window.location.reload();
         }
       })
       .catch((error) => {
@@ -133,12 +135,9 @@ const Main = () => {
       });
   };
 
-
   if (!localStorage.getItem("token")) {
     return <Navigate to="/login" />;
   }
-
-  console.log(doge);
 
   return (
     <Box>
@@ -258,26 +257,47 @@ const Main = () => {
           <ModalCloseButton />
           <ModalBody>
             <Text fontWeight={"bold"}>File Upload</Text>
-            <Input type="file"  marginBottom={"10px"} onChange={handleFileChange} />
+
+            <Input
+              type="file"
+              accept=".csv"
+              marginBottom={"10px"}
+              onChange={handleFileChange}
+            />
             <Text fontWeight={"bold"}>Dataset Name</Text>
-            <Input placeholder="ex: Shop Review" marginBottom={"10px"} onChange={(e)=>setUploadedFileName(e.target.value)}/>
+            <Input
+              placeholder="ex: Shop Review"
+              marginBottom={"10px"}
+              onChange={(e) => setUploadedFileName(e.target.value)}
+            />
             <Text fontWeight={"bold"}>Dataset Description</Text>
-            <Input placeholder="ex: Contains shoe shop customer reviews" marginBottom={"10px"} onChange={(e)=>setUploadedFileDescription(e.target.value)}/>
+            <Textarea
+              placeholder={
+                "ex: Dataset contains reviews of shoe shops in the UK."
+              }
+              size="sm"
+              marginBottom={"10px"}
+              onChange={(e) => setUploadedFileDescription(e.target.value)}
+            />
             <Text fontWeight={"bold"}>Dataset Labels</Text>
-            <Input placeholder="seperate with comma, ex: good,bad,neutral" marginBottom={"10px"} onChange={(e)=>setUploadedFileLabels(e.target.value)}/>
+            <Input
+              placeholder="seperate with comma, ex: good,bad,neutral"
+              marginBottom={"10px"}
+              onChange={(e) => setUploadedFileLabels(e.target.value)}
+            />
           </ModalBody>
 
           <ModalFooter>
-            <Button colorScheme='blue' mr={3} onClick={handleFileUpload}>
+            <Button colorScheme="blue" mr={3} onClick={handleFileUpload}>
               Upload
             </Button>
-            <Button variant='ghost' onClick={onClose}>Cancel</Button>
+            <Button variant="ghost" onClick={onClose}>
+              Cancel
+            </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
     </Box>
-
-
   );
 };
 
