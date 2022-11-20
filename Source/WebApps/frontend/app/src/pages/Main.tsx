@@ -23,6 +23,15 @@ import {
   ModalHeader,
   ModalOverlay,
   Textarea,
+  Thead,
+  Table,
+  TableCaption,
+  TableContainer,
+  Tbody,
+  Td,
+  Tfoot,
+  Th,
+  Tr,
 } from "@chakra-ui/react";
 import { ColorModeSwitcher } from "../ColorModeSwitcher";
 import doge from "../doge.png";
@@ -37,7 +46,7 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
-import { BE_URL } from "../constanta";
+import { BE_URL, EXAMPLE_DATASET } from "../constanta";
 import { useEffect } from "react";
 
 const Main = () => {
@@ -45,7 +54,7 @@ const Main = () => {
 
   const [datasetList, setDatasetList] = React.useState([
     {
-      id: 1,
+      id: -69420,
       name: "isengg",
       metadata: "testaafdsadf",
       fileLocation: "7995c231-fd3c-4ff2-abd1-12ba339e2612.rar",
@@ -54,38 +63,68 @@ const Main = () => {
       updatedAt: "2022-11-18T14:50:14.349499+07:00",
       DeletedAt: null,
     },
-    {
-      id: 2,
-      name: "isengg2",
-      metadata: "testaafdsadf22222",
-      fileLocation: "7995c231-fd3c-4ff2-abd1-12ba339e2612.rar",
-      owner: "tester",
-      createdAt: "2022-11-18T14:50:14.349499+07:00",
-      updatedAt: "2022-11-18T14:50:14.349499+07:00",
-      DeletedAt: null,
-    },
-    {
-      id: 3,
-      name: "isengg3",
-      metadata: "testaafdsadf33333",
-      fileLocation: "7995c231-fd3c-4ff2-abd1-12ba339e2612.rar",
-      owner: "tester",
-      createdAt: "2022-11-18T14:50:14.349499+07:00",
-      updatedAt: "2022-11-18T14:50:14.349499+07:00",
-      DeletedAt: null,
-    },
   ]);
   const [dataset, setDataset] = React.useState(datasetList[0]);
+  const [datasetContent, setDatasetContent] = React.useState(
+    EXAMPLE_DATASET["extraction"]
+  );
   const [uploadedFile, setUploadedFile] = React.useState(null);
   const [uploadedFileName, setUploadedFileName] = React.useState("");
   const [uploadedFileDescription, setUploadedFileDescription] =
     React.useState("");
   const [uploadedFileLabels, setUploadedFileLabels] = React.useState("");
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const {
+    isOpen: isOpen2,
+    onOpen: onOpen2,
+    onClose: onClose2,
+  } = useDisclosure();
 
   const handleFileChange = (e: any) => {
     setUploadedFile(e.target.files[0]);
     console.log(e);
+  };
+
+  const handleFileDownload = async (e: any) => {
+    e.preventDefault();
+    fetch(BE_URL + dataset.fileLocation).then((response) => {
+      response.blob().then((blob) => {
+        // Creating new object of PDF file
+        const fileURL = window.URL.createObjectURL(blob);
+        // Setting various property values
+        let alink = document.createElement("a");
+        alink.href = fileURL;
+        alink.download = dataset.name + ".csv";
+        alink.click();
+      });
+    });
+  };
+
+  const handleFileDelete = async (e: any) => {
+    e.preventDefault();
+    const requestOptions = {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+    };
+    fetch(BE_URL + "datasets/" + dataset.id, requestOptions).then((response) =>
+      response.json()
+    );
+    setDatasetList(datasetList.filter((item) => item.id !== dataset.id));
+    if (datasetList.length === 0) {
+      setDataset({
+        id: -69420,
+        name: "isengg",
+        metadata: "testaafdsadf",
+        fileLocation: "7995c231-fd3c-4ff2-abd1-12ba339e2612.rar",
+        owner: "tester",
+        createdAt: "2022-11-18T14:50:14.349499+07:00",
+        updatedAt: "2022-11-18T14:50:14.349499+07:00",
+        DeletedAt: null,
+      });
+    } else {
+      setDataset(datasetList[0]);
+    }
+    onClose2();
   };
 
   useEffect(() => {
@@ -94,16 +133,29 @@ const Main = () => {
         const res = await fetch(
           BE_URL + "datasets?owner=" + localStorage.getItem("token")
         );
-        if (res.status == 200) {
+        if (res.status === 200) {
           const jsonData = await res.json();
           console.log(jsonData);
-          setDataset(jsonData["data"]);
+          setDatasetList(jsonData["data"]);
         }
       }
     };
 
     fetchData();
-  }, []);
+  }, [dataset]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const res = await fetch(BE_URL + "datasets/" + dataset.id + "/csv");
+      if (res.status === 200) {
+        const jsonData = await res.json();
+        console.log(jsonData);
+        setDatasetContent(jsonData["extraction"]);
+      }
+    };
+
+    fetchData();
+  }, [dataset]);
 
   const handleFileUpload = () => {
     const owner = localStorage.getItem("token");
@@ -119,20 +171,22 @@ const Main = () => {
       body: formData,
     })
       .then((response) => {
-        if (response.status == 200) {
-          alert("berhasil unggah");
+        if (response.status === 200) {
           return response.json();
         }
         return null;
       })
       .then((result) => {
         if (result != null) {
-          window.location.reload();
+          setDatasetList([...datasetList, result.data]);
+          console.log("upload", result.data);
+          setDataset(result.data);
         }
       })
       .catch((error) => {
         console.error("Error:", error);
       });
+      onClose();
   };
 
   if (!localStorage.getItem("token")) {
@@ -168,12 +222,13 @@ const Main = () => {
           <Box h={"60vh"} overflowY={"auto"}>
             {datasetList.map((dset) => (
               <Center>
-                <Box
-                  as={"button"}
+                <Button
+                  // as={"button"}
                   fontWeight="bold"
-                  bg="white"
+                  bg={dset.id === dataset.id ? "gray.300" : "white"}
                   w="180px"
                   h="fit-content"
+                  minH="32px"
                   p="1"
                   borderRadius="md"
                   boxShadow="md"
@@ -181,7 +236,7 @@ const Main = () => {
                   onClick={() => setDataset(dset)}
                 >
                   <Text>{dset.name}</Text>
-                </Box>
+                </Button>
               </Center>
             ))}
           </Box>
@@ -229,22 +284,73 @@ const Main = () => {
                 colorScheme={"teal"}
                 w="150px"
                 h="fit-content"
+                onClick={handleFileDownload}
               >
-                <Text>EDIT</Text>
+                <Text>DOWNLOAD</Text>
               </Button>
               <Button
                 fontWeight="bold"
                 colorScheme={"teal"}
                 w="150px"
                 h="fit-content"
+                onClick={onOpen2}
               >
                 <Text>DELETE</Text>
               </Button>
             </Box>
           </Center>
         </GridItem>
-        <GridItem bg="white" area={"main"} textAlign={"center"}>
-          {dataset.name}
+        <GridItem
+          bg="white"
+          area={"main"}
+          textAlign={"center"}
+          overflowX={"auto"}
+          overflowY={"auto"}
+        >
+          {dataset.id === -69420 ? (
+            <Text
+              fontSize={"20px"}
+              marginTop={"40vh"}
+              marginBottom={"40vh"}
+              // maxH={"100vh"}
+              fontWeight={"bold"}
+            >
+              Nothing to show
+            </Text>
+          ) : (
+            <Center>
+              <TableContainer margin={"20px"}>
+                <Table variant="striped" colorScheme="teal" bg={"gray.300"}>
+                  {/* <TableCaption>
+                  Imperial to metric conversion factors
+                </TableCaption> */}
+                  <Thead bg={"gray.400"}>
+                    <Tr>
+                      {datasetContent["Columns"].map((col) => (
+                        <Th>{col}</Th>
+                      ))}
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {datasetContent["Rows"].map((row) => (
+                      <Tr>
+                        {Object.keys(row).map((col) => (
+                          <Td>{(row as any)[col]}</Td>
+                        ))}
+                      </Tr>
+                    ))}
+                  </Tbody>
+                  {/* <Tfoot>
+                  <Tr>
+                    <Th>To convert</Th>
+                    <Th>into</Th>
+                    <Th isNumeric>multiply by</Th>
+                  </Tr>
+                </Tfoot> */}
+                </Table>
+              </TableContainer>
+            </Center>
+          )}
         </GridItem>
         {/* <GridItem pl="2" bg="blue.300" area={"footer"}>
           Footer
@@ -292,6 +398,24 @@ const Main = () => {
               Upload
             </Button>
             <Button variant="ghost" onClick={onClose}>
+              Cancel
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+      <Modal isOpen={isOpen2} onClose={onClose2}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Delete Confirmation</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Text>Are you sure you want to delete this file?</Text>
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="red" mr={3} onClick={handleFileDelete}>
+              Delete
+            </Button>
+            <Button variant="ghost" onClick={onClose2}>
               Cancel
             </Button>
           </ModalFooter>

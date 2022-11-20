@@ -24,7 +24,7 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
-import {BE_URL} from "../constanta";
+import { BE_URL } from "../constanta";
 
 const Main = () => {
   const [username, setUsername] = React.useState("");
@@ -38,8 +38,9 @@ const Main = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(BE_URL+"user/login", {
+      const response = await fetch(BE_URL + "user/login", {
         method: "POST",
+        // mode: "no-cors",
         headers: {
           "Content-Type": "application/json",
         },
@@ -50,10 +51,12 @@ const Main = () => {
       });
       const data = await response.json();
 
-      if(response.status==200){
+      if (response.status === 200) {
+        console.log("dua ratus");
         localStorage.setItem("token", username);
         navigate("/");
-      }else{
+      } else {
+        console.log("bukan 200");
         setError(data.error);
       }
     } catch (error: any) {
