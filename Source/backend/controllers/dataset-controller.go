@@ -3,6 +3,7 @@ package controllers
 import (
 	"annotate-be/database"
 	"annotate-be/models"
+	"annotate-be/services"
 	"annotate-be/utils"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -39,7 +40,8 @@ func GetAllDataset(ctx *gin.Context) {
 func GetDatasetById(ctx *gin.Context) {
 	var dataset models.Dataset
 	var owner, hasOwner = ctx.GetQuery("owner")
-	if err := database.DB.Where(utils.IfThenElse(hasOwner, "id = ? and owner = ?", "id = ?"), ctx.Param("id"), owner).First(&dataset).Error; err != nil {
+	if err := database.DB.Where(utils.IfThenElse(hasOwner, "id = ? and owner = ?", "id = ? and 1="+
+		"?"), ctx.Param("id"), utils.IfThenElse(hasOwner, owner, 1)).First(&dataset).Error; err != nil {
 		ctx.JSON(http.StatusNotFound, utils.ExceptionResponse("dataset tidak ditemukan"))
 		return
 	}
@@ -95,5 +97,21 @@ func AddDataset(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "berhasil tambah dataset baru",
 		"data":    new_dataset,
+	})
+}
+
+func ExtractCsvDataset(ctx *gin.Context) {
+	var dataset models.Dataset
+	var owner, hasOwner = ctx.GetQuery("owner")
+	if err := database.DB.Where(utils.IfThenElse(hasOwner, "id = ? and owner = ?", "id = ? and 1="+
+		"?"), ctx.Param("id"), utils.IfThenElse(hasOwner, owner, 1)).First(&dataset).Error; err != nil {
+		ctx.JSON(http.StatusNotFound, utils.ExceptionResponse("dataset tidak ditemukan"))
+		return
+	}
+	extraction := services.CsvReaderService(dataset.FileLocation)
+	ctx.JSON(http.StatusOK, gin.H{
+		"message":    "berhasil extract csv",
+		"extraction": extraction,
+		"data":       dataset,
 	})
 }
