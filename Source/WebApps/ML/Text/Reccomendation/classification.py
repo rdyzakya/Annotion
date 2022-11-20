@@ -2,23 +2,20 @@ from sklearn.ensemble import AdaBoostClassifier
 from sklearn.svm import SVC
 from xgboost import XGBClassifier
 
-def xgboost(df,columns,target,**kwargs):
-    df_ = df.copy()
+def xgboost(train_vectors,prediction_vectors,target,**kwargs):
     xgb = XGBClassifier(**kwargs)
-    xgb.fit(df_[columns],df_[target])
-    df_["prediction"] = xgb.predict(df_[columns])
-    return df_,xgb
+    xgb.fit(train_vectors,target)
+    predictions = xgb.predict(prediction_vectors)
+    return predictions,xgb
 
-def adaboost(df,columns,target,**kwargs):
-    df_ = df.copy()
+def adaboost(train_vectors,prediction_vectors,target,**kwargs):
     ada = AdaBoostClassifier(**kwargs)
-    ada.fit(df_[columns],df_[target])
-    df_["prediction"] = ada.predict(df_[columns])
-    return df_,ada
+    ada.fit(train_vectors,target)
+    predictions = ada.predict(prediction_vectors)
+    return predictions,ada
 
-def svm_classifier(df,columns,target,**kwargs):
-    df_ = df.copy()
+def svm_classifier(train_vectors,prediction_vectors,target,**kwargs):
     svm = SVC(**kwargs)
-    svm.fit(df_[columns],df_[target])
-    df_["prediction"] = svm.predict(df_[columns])
-    return df_,svm
+    svm.fit(train_vectors,target)
+    predictions = svm.predict(prediction_vectors)
+    return predictions,svm
