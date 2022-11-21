@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"os/exec"
@@ -75,7 +76,7 @@ func DeleteDatasetById(ctx *gin.Context) {
 func AddDataset(ctx *gin.Context) {
 	var body newDatasetBody
 	if err := ctx.ShouldBind(&body); err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		ctx.JSON(400, utils.ExceptionResponse("data kurang lengkap"))
 		return
 	}
@@ -102,7 +103,7 @@ func AddDataset(ctx *gin.Context) {
 	storageLoc := fmt.Sprintf("storage/%s%s", newUUID, extension)
 	err = ctx.SaveUploadedFile(uploadedFile, storageLoc)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		ctx.JSON(http.StatusInternalServerError, utils.ErrorResponse(err))
 		return
 	}
