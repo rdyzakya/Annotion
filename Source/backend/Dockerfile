@@ -1,4 +1,4 @@
-FROM golang:buster AS build
+FROM golang:alpine AS build
 
 WORKDIR /go/src/app
 
@@ -11,6 +11,7 @@ WORKDIR /usr/bin
 COPY --from=build /go/src/app/server .
 COPY --from=build /go/src/app/.env .
 RUN mkdir storage
+RUN apk add --no-cache util-linux
 RUN chmod +x ./server
 EXPOSE 8010
 ENTRYPOINT ["./server"]
