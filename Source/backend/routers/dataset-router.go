@@ -12,5 +12,6 @@ func DatasetRouter(engine *gin.Engine) {
 		group.GET("", controllers.GetAllDataset)
 		group.GET("/:id", controllers.GetDatasetById)
 		group.GET("/:id/csv", controllers.ExtractCsvDataset)
+		group.DELETE("/:id", controllers.DeleteDatasetById)
 	}
 }

@@ -52,6 +52,26 @@ func GetDatasetById(ctx *gin.Context) {
 	})
 }
 
+func DeleteDatasetById(ctx *gin.Context) {
+	var dataset models.Dataset
+	var owner, hasOwner = ctx.GetQuery("owner")
+	if err := database.DB.Where(utils.IfThenElse(hasOwner, "id = ? and owner = ?", "id = ? and 1="+
+		"?"), ctx.Param("id"), utils.IfThenElse(hasOwner, owner, 1)).First(&dataset).Error; err != nil {
+		ctx.JSON(http.StatusNotFound, utils.ExceptionResponse("dataset tidak ditemukan"))
+		return
+	}
+
+	if err := database.DB.Delete(&dataset).Error; err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.ErrorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "berhasil menghapus dataset",
+		"data":    dataset,
+	})
+}
+
 func AddDataset(ctx *gin.Context) {
 	var body newDatasetBody
 	if err := ctx.ShouldBind(&body); err != nil {
@@ -63,6 +83,7 @@ func AddDataset(ctx *gin.Context) {
 	//Upload dataset to storage
 	uploadedFile, e := ctx.FormFile("annotation_file")
 	if e != nil {
+		fmt.Println(e)
 		ctx.JSON(500, utils.ErrorResponse(e))
 		return
 	}
@@ -81,6 +102,7 @@ func AddDataset(ctx *gin.Context) {
 	storageLoc := fmt.Sprintf("storage/%s%s", newUUID, extension)
 	err = ctx.SaveUploadedFile(uploadedFile, storageLoc)
 	if err != nil {
+		fmt.Println(err)
 		ctx.JSON(http.StatusInternalServerError, utils.ErrorResponse(err))
 		return
 	}
