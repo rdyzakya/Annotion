@@ -10,6 +10,7 @@ FROM alpine:3.10
 WORKDIR /usr/bin
 COPY --from=build /go/src/app/server .
 COPY --from=build /go/src/app/.env .
+RUN mkdir storage
 RUN chmod +x ./server
 EXPOSE 8010
 ENTRYPOINT ["./server"]
