@@ -79,7 +79,7 @@ func AddDataset(ctx *gin.Context) {
 		ctx.JSON(400, utils.ExceptionResponse("data kurang lengkap"))
 		return
 	}
-
+	fmt.Println(body)
 	//Upload dataset to storage
 	uploadedFile, e := ctx.FormFile("annotation_file")
 	if e != nil {
