@@ -1,4 +1,4 @@
-export const BE_URL="https://d2c7-113-11-180-49.ap.ngrok.io/"
+export const BE_URL="https://tsdn-be.sikode.id/"
 export const EXAMPLE_DATASET = {
     "data": {
         "id": 4,

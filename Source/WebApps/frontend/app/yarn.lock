@@ -8502,11 +8502,6 @@ react-clientside-effect@^1.2.6:
   dependencies:
     "@babel/runtime" "^7.12.13"
 
-react-csv-to-table@^0.0.4:
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/react-csv-to-table/-/react-csv-to-table-0.0.4.tgz#e8f65560282db73031dc3650e6719c0295d18fdd"
-  integrity sha512-YHdhavi7WgksHn3/S/pIHDy4zepeYjTQkTfmKcQv976OwNSWIUB7RlYJKmCFXAgfqkbiCNbtEIHnX1n3/rTfJA==
-
 react-dev-utils@^12.0.1:
   version "12.0.1"
   resolved "https://registry.yarnpkg.com/react-dev-utils/-/react-dev-utils-12.0.1.tgz#ba92edb4a1f379bd46ccd6bcd4e7bc398df33e73"
