@@ -1,4 +1,4 @@
-FROM golang:alpine AS build
+FROM golang:buster AS build
 
 WORKDIR /go/src/app
 
