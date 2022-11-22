@@ -53,6 +53,24 @@ func GetDatasetById(ctx *gin.Context) {
 	})
 }
 
+func AnnotateDatasetById(ctx *gin.Context) {
+	var dataset models.Dataset
+	var owner, hasOwner = ctx.GetQuery("owner")
+	if err := database.DB.Where(utils.IfThenElse(hasOwner, "id = ? and owner = ?", "id = ? and 1="+
+		"?"), ctx.Param("id"), utils.IfThenElse(hasOwner, owner, 1)).First(&dataset).Error; err != nil {
+		ctx.JSON(http.StatusNotFound, utils.ExceptionResponse("dataset tidak ditemukan"))
+		return
+	}
+
+	labels := strings.Split(dataset.Labels, ",")
+	extraction := services.AnnotationService(dataset.FileLocation, dataset.ID, dataset.Trained, labels)
+	ctx.JSON(http.StatusOK, gin.H{
+		"message":   "berhasil extract csv",
+		"annotated": extraction,
+		"data":      dataset,
+	})
+}
+
 func DeleteDatasetById(ctx *gin.Context) {
 	var dataset models.Dataset
 	var owner, hasOwner = ctx.GetQuery("owner")

@@ -33,7 +33,7 @@ func DBSetupMain() {
 		panic("Failed connect to database -> " + err.Error())
 	}
 
-	err = dbase.AutoMigrate(&models.Dataset{})
+	err = dbase.AutoMigrate(&models.Dataset{}, &models.Annotation{})
 	if err != nil {
 		panic("Migration DB error: " + err.Error())
 	}
