@@ -57,9 +57,12 @@ const Main = () => {
     {
       id: -69420,
       name: "isengg",
-      metadata: "testaafdsadf",
+      description: "testaafdsadf",
       fileLocation: "7995c231-fd3c-4ff2-abd1-12ba339e2612.rar",
+      labels: "true, false",
       owner: "tester",
+      trained: false,
+      Annotations: null,
       createdAt: "2022-11-18T14:50:14.349499+07:00",
       updatedAt: "2022-11-18T14:50:14.349499+07:00",
       DeletedAt: null,
@@ -75,11 +78,19 @@ const Main = () => {
   const [uploadedFileDescription, setUploadedFileDescription] =
     React.useState("");
   const [uploadedFileLabels, setUploadedFileLabels] = React.useState("");
+  const [changedFileName, setChangedFileName] = React.useState("");
+  const [changedFileDescription, setChangedFileDescription] =
+    React.useState("");
   const { isOpen, onOpen, onClose } = useDisclosure();
   const {
     isOpen: isOpen2,
     onOpen: onOpen2,
     onClose: onClose2,
+  } = useDisclosure();
+  const {
+    isOpen: isOpen3,
+    onOpen: onOpen3,
+    onClose: onClose3,
   } = useDisclosure();
 
   const handleLogout = () => {
@@ -121,9 +132,12 @@ const Main = () => {
       setDataset({
         id: -69420,
         name: "isengg",
-        metadata: "testaafdsadf",
+        description: "testaafdsadf",
         fileLocation: "7995c231-fd3c-4ff2-abd1-12ba339e2612.rar",
+        labels: "true, false",
         owner: "tester",
+        trained: false,
+        Annotations: null,
         createdAt: "2022-11-18T14:50:14.349499+07:00",
         updatedAt: "2022-11-18T14:50:14.349499+07:00",
         DeletedAt: null,
@@ -196,6 +210,40 @@ const Main = () => {
         console.error("Error:", error);
       });
     onClose();
+  };
+
+  const handleMetadataChange = () => {
+    const formData = new FormData();
+    formData.append("dataset_name", changedFileName);
+    formData.append("description", changedFileDescription);
+    fetch(endpoint + "datasets/" + dataset.id, {
+      method: "PUT",
+      body: formData,
+    })
+      .then((response) => {
+        if (response.status === 200) {
+          return response.json();
+        }
+        return null;
+      })
+      .then((result) => {
+        if (result != null) {
+          setDatasetList(
+            datasetList.map((item) => {
+              if (item.id === dataset.id) {
+                return result.data;
+              }
+              return item;
+            })
+          );
+          console.log("upload", result.data);
+          setDataset(result.data);
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+    onClose3();
   };
 
   if (!localStorage.getItem("token")) {
@@ -287,6 +335,7 @@ const Main = () => {
                 colorScheme={"teal"}
                 w="150px"
                 h="fit-content"
+                onClick={dataset.id !== -69420 ? onOpen3 : undefined}
               >
                 <Text>EDIT METADATA</Text>
               </Button>
@@ -514,6 +563,36 @@ const Main = () => {
               Delete
             </Button>
             <Button variant="ghost" onClick={onClose2}>
+              Cancel
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+      <Modal isOpen={isOpen3} onClose={onClose3}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Edit Metadata</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Text fontWeight={"bold"}>Dataset Name</Text>
+            <Input
+              defaultValue={dataset["name"]}
+              marginBottom={"10px"}
+              onChange={(e) => setChangedFileName(e.target.value)}
+            />
+            <Text fontWeight={"bold"}>Dataset Description</Text>
+            <Textarea
+              defaultValue={dataset["description"]}
+              size="sm"
+              marginBottom={"10px"}
+              onChange={(e) => setChangedFileDescription(e.target.value)}
+            />
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="blue" mr={3} onClick={handleMetadataChange}>
+              Save
+            </Button>
+            <Button variant="ghost" onClick={onClose3}>
               Cancel
             </Button>
           </ModalFooter>
