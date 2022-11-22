@@ -32,6 +32,7 @@ import {
   Tfoot,
   Th,
   Tr,
+  Select,
 } from "@chakra-ui/react";
 import { ColorModeSwitcher } from "../ColorModeSwitcher";
 import doge from "../doge.png";
@@ -64,6 +65,7 @@ const Main = () => {
       DeletedAt: null,
     },
   ]);
+  const [annotateMode, setAnnotateMode] = React.useState(false);
   const [dataset, setDataset] = React.useState(datasetList[0]);
   const [datasetContent, setDatasetContent] = React.useState(
     EXAMPLE_DATASET["extraction"]
@@ -79,6 +81,11 @@ const Main = () => {
     onOpen: onOpen2,
     onClose: onClose2,
   } = useDisclosure();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    window.location.href = "/";
+  };
 
   const handleFileChange = (e: any) => {
     setUploadedFile(e.target.files[0]);
@@ -154,7 +161,9 @@ const Main = () => {
       }
     };
 
-    fetchData();
+    if (dataset.id !== -69420) {
+      fetchData();
+    }
   }, [dataset]);
 
   const handleFileUpload = () => {
@@ -186,7 +195,7 @@ const Main = () => {
       .catch((error) => {
         console.error("Error:", error);
       });
-      onClose();
+    onClose();
   };
 
   if (!localStorage.getItem("token")) {
@@ -233,7 +242,17 @@ const Main = () => {
                   borderRadius="md"
                   boxShadow="md"
                   m="1"
-                  onClick={() => setDataset(dset)}
+                  onClick={() => {
+                    setAnnotateMode(false);
+                    setDataset(dset);
+                    console.log(
+                      (datasetContent["Rows"] as any)[0][
+                        datasetContent["Columns"][
+                          datasetContent["Columns"].length - 1
+                        ]
+                      ]
+                    );
+                  }}
                 >
                   <Text>{dset.name}</Text>
                 </Button>
@@ -244,7 +263,7 @@ const Main = () => {
             <Box
               bg={"teal.500"}
               w="180px"
-              h="23vh"
+              h={"23vh"}
               p="1"
               borderRadius="md"
               boxShadow="md"
@@ -276,6 +295,7 @@ const Main = () => {
                 colorScheme={"teal"}
                 w="150px"
                 h="fit-content"
+                onClick={() => setAnnotateMode(true)}
               >
                 <Text>ANNOTATE</Text>
               </Button>
@@ -297,6 +317,18 @@ const Main = () => {
               >
                 <Text>DELETE</Text>
               </Button>
+              <Button
+                fontWeight="bold"
+                colorScheme={"teal"}
+                w="150px"
+                h="fit-content"
+                color={"red.600"}
+                onClick={handleLogout}
+              >
+                <Text>LOGOUT</Text>
+              </Button>
+              <br></br>
+              <br></br>
             </Box>
           </Center>
         </GridItem>
@@ -334,9 +366,75 @@ const Main = () => {
                   <Tbody>
                     {datasetContent["Rows"].map((row) => (
                       <Tr>
-                        {Object.keys(row).map((col) => (
-                          <Td>{(row as any)[col]}</Td>
-                        ))}
+                        {datasetContent["Columns"]
+                          .filter(
+                            (col) =>
+                              col !==
+                              datasetContent["Columns"][
+                                datasetContent["Columns"].length - 1
+                              ]
+                          )
+                          .map((col) => (
+                            <Td>{(row as any)[col]}</Td>
+                          ))}
+                        {annotateMode ? (
+                          <Td>
+                            <Select
+                              defaultValue={
+                                (row as any)[
+                                  datasetContent["Columns"][
+                                    datasetContent["Columns"].length - 1
+                                  ]
+                                ]
+                              }
+                              bg={"white"}
+                              onChange={(e) => {
+                                (row as any)[
+                                  datasetContent["Columns"][
+                                    datasetContent["Columns"].length - 1
+                                  ]
+                                ] = e.target.value;
+                                console.log(
+                                  (row as any)[
+                                    datasetContent["Columns"][
+                                      datasetContent["Columns"].length - 1
+                                    ]
+                                  ]
+                                );
+                              }}
+                            >
+                              <option
+                                value={
+                                  (row as any)[
+                                    datasetContent["Columns"][
+                                      datasetContent["Columns"].length - 1
+                                    ]
+                                  ]
+                                }
+                              >
+                                {
+                                  (row as any)[
+                                    datasetContent["Columns"][
+                                      datasetContent["Columns"].length - 1
+                                    ]
+                                  ]
+                                }
+                              </option>
+                              <option value="2">2</option>
+                              <option value="3">3</option>
+                            </Select>
+                          </Td>
+                        ) : (
+                          <Td>
+                            {
+                              (row as any)[
+                                datasetContent["Columns"][
+                                  datasetContent["Columns"].length - 1
+                                ]
+                              ]
+                            }
+                          </Td>
+                        )}
                       </Tr>
                     ))}
                   </Tbody>
